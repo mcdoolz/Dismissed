@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "dismissed",
+  "description": "Dismiss LinkedIn job listings by string.",
+  "version": "1.0.0",
+  "action": {
+    "default_icon": "icon_small.png",
+    "default_popup": "popup.html",
+    "default_title": "Dismiss"
+  },
+  "icons": {
+    "16": "icon_small.png",
+    "48": "icon_medium.png",
+    "128": "icon_large.png"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.linkedin.com/*"
+  ]
+}

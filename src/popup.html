@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Dismissed</title>
+    <style>
+      @import "popup.css";
+    </style>
+  </head>
+  <body>
+    <h2>Dismiss LinkedIn Jobs</h2>
+
+    <label for="companyInput">Companies to dismiss:</label>
+    <input type="text" id="companyInput" placeholder="Enter company names" />
+    <div id="companyTags" class="tag-container"></div>
+
+    <label for="titleInput">Job titles to dismiss:</label>
+    <input type="text" id="titleInput" placeholder="Enter job titles" />
+    <div id="titleTags" class="tag-container"></div>
+
+    <button id="saveButton">Save</button>
+    <button id="clearButton">Clear</button>
+    <button id="dismissButton">Dismiss Jobs</button>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
