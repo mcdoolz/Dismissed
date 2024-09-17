@@ -7,32 +7,43 @@
     </style>
   </head>
   <body>
-    <h2>Dismiss LinkedIn Jobs</h2>
+    <h2>Dismissed!</h2>
 
-    <label for="filterTypeSelect">Select filter type:</label>
-    <select id="filterTypeSelect">
-      <option value="companies">Companies</option>
-      <option value="titles">Job Titles</option>
-    </select>
+    <div id="filter">
+      <label for="filterTypeSelect">I want to dismiss </label>
+      <select id="filterTypeSelect">
+        <option value="companies">Companies</option>
+        <option value="titles">Jobs</option>
+      </select>
 
-    <label for="filterInput">Enter filter:</label>
-    <input
-      type="text"
-      id="filterInput"
-      placeholder="Enter tags as a commas or semicolon spaced list."
-    />
+      <label for="filterInput">titled</label>
+      <input
+        type="text"
+        id="filterInput"
+        placeholder="Enter terms to be dismissed."
+      />
+    </div>
 
     <div id="companyTagsWrapper">
-      <h3>Companies to dismiss:</h3>
+      <h3>
+        <img src="img/office.svg" alt="Office icon" class="header-icon" />
+        Companies
+      </h3>
       <div id="companyTags" class="tag-container"></div>
     </div>
 
     <div id="titleTagsWrapper">
-      <h3>Job titles to dismiss:</h3>
+      <h3>
+        <img src="img/usertag.svg" alt="Jobtitles icon" class="header-icon" />
+        Job titles
+      </h3>
       <div id="titleTags" class="tag-container"></div>
     </div>
 
-    <button id="dismissButton">Dismiss Jobs</button>
+    <button id="dismissButton">
+      <img src="img/trash.svg" alt="Trash icon" class="button-icon" />
+      Dismiss!
+    </button>
 
     <script src="popup.js"></script>
   </body>

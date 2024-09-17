@@ -3,30 +3,99 @@ body {
   padding: 10px;
   font-family: Arial, sans-serif;
 }
-input,
+
+input {
+  margin-bottom: 10px;
+  padding: 4px;
+}
+
+#filter {
+  width: 100%;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+#filter label {
+  margin-bottom: 5px;
+}
+#filterTypeSelect,
+#filterInput {
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 button {
   width: 100%;
+
   margin-bottom: 10px;
+  padding: 8px;
 }
+
 .tag-container {
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 10px;
 }
+
 .tag {
   background-color: #e0e0e0;
   border-radius: 3px;
-  padding: 2px 5px;
+  padding: 10px 30px 10px 10px;
   margin: 2px;
+  font-size: 12px;
   display: inline-block;
+  position: relative;
 }
+
 .tag button {
   background: none;
   border: none;
   color: red;
   cursor: pointer;
   font-weight: bold;
-  margin-left: 5px;
   padding: 0;
   width: auto;
+  position: absolute;
+  right: 15px;
+  font-size: 12px;
+}
+
+#filter {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#dismissButton {
+  display: flex;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#dismissButton:hover {
+  background-color: darkred;
+}
+
+.header-icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+.button-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.button-icon {
+  filter: brightness(0) invert(1);
 }
