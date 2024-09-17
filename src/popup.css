@@ -26,6 +26,11 @@ input {
   border-radius: 4px;
 }
 
+#filterInput {
+  width: 256px;
+  margin: 0 auto;
+}
+
 button {
   width: 100%;
 
@@ -98,4 +103,28 @@ button {
 
 .button-icon {
   filter: brightness(0) invert(1);
+}
+
+footer {
+  text-align: right;
+  margin-top: 20px;
+  font-size: 12px;
+  color: #666;
+  font-weight: bold;
+}
+
+footer a {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+footer a:hover {
+  color: #333;
+}
+
+#heartIcon {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
 }
