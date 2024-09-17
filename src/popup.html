@@ -9,16 +9,29 @@
   <body>
     <h2>Dismiss LinkedIn Jobs</h2>
 
-    <label for="companyInput">Companies to dismiss:</label>
-    <input type="text" id="companyInput" placeholder="Enter company names" />
-    <div id="companyTags" class="tag-container"></div>
+    <label for="filterTypeSelect">Select filter type:</label>
+    <select id="filterTypeSelect">
+      <option value="companies">Companies</option>
+      <option value="titles">Job Titles</option>
+    </select>
 
-    <label for="titleInput">Job titles to dismiss:</label>
-    <input type="text" id="titleInput" placeholder="Enter job titles" />
-    <div id="titleTags" class="tag-container"></div>
+    <label for="filterInput">Enter filter:</label>
+    <input
+      type="text"
+      id="filterInput"
+      placeholder="Enter tags as a commas or semicolon spaced list."
+    />
 
-    <button id="saveButton">Save</button>
-    <button id="clearButton">Clear</button>
+    <div id="companyTagsWrapper">
+      <h3>Companies to dismiss:</h3>
+      <div id="companyTags" class="tag-container"></div>
+    </div>
+
+    <div id="titleTagsWrapper">
+      <h3>Job titles to dismiss:</h3>
+      <div id="titleTags" class="tag-container"></div>
+    </div>
+
     <button id="dismissButton">Dismiss Jobs</button>
 
     <script src="popup.js"></script>
