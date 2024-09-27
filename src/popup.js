@@ -59,12 +59,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Dismiss jobs on LinkedIn
+  // Function to format the date
+  function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  }
+
+  // Function to check and set installation date
+  function checkAndSetInstallDate() {
+    chrome.storage.sync.get(['installDate'], ({ installDate }) => {
+      if (!installDate) {
+        // If install date doesn't exist, set it to current date
+        const currentDate = new Date().toISOString();
+        chrome.storage.sync.set({ installDate: currentDate }, () => {
+          console.log('Installation date set:', currentDate);
+          displayInstallDate(currentDate);
+        });
+      } else {
+        displayInstallDate(installDate);
+      }
+    });
+  }
+
+  // Function to display the installation date
+  function displayInstallDate(dateString) {
+    const formattedDate = formatDate(dateString);
+    const installDateElement = document.getElementById('installDate');
+    if (installDateElement) {
+      installDateElement.textContent = formattedDate;
+    }
+  }
+
+  // Call the function to check and set install date
+  checkAndSetInstallDate();
+
   dismissButton.addEventListener('click', () => {
-    // console.log('Dismiss button clicked');
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentUrl = tabs[0].url;
+      if (!currentUrl.includes('linkedin.com')) {
+        alert('Please navigate to LinkedIn.com to use this extension.');
+        return;
+      }
+
       chrome.storage.sync.get(['companies', 'titles'], ({ companies = [], titles = [] }) => {
-        // console.log('Dismissing jobs with:', { companies, titles });
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
           func: dismissJobs,
@@ -117,53 +154,89 @@ document.addEventListener('DOMContentLoaded', () => {
     // console.log('Retrieved titles:', titles);
     displayTags(companies, companyTags, 'companies');
     displayTags(titles, titleTags, 'titles');
+    updateDismissedCount();
   });
 
 });
 
-// This runs in the context of the LinkedIn page
+/**
+ * Update the dismissed count if dismissed is provided and over zero.
+ * Else return the number of dismissed jobs thus.
+ * Use chrome.storage.sync to store the count.
+ * @param {number} dismissed - The number of dismissed jobs to add to the count.
+ * @returns {number} - The total number of dismissed jobs.
+ */
+function dismissedCount(dismissed) {
+  console.log('dismissedCount function called with:', dismissed);
+  if (dismissed && dismissed > 0) {
+    chrome.storage.sync.get(['dismissed'], ({ dismissed: currentDismissed }) => {
+      const newDismissed = currentDismissed ? currentDismissed + dismissed : dismissed;
+      chrome.storage.sync.set({ dismissed: newDismissed }, () => {
+        return newDismissed;
+      });
+    });
+  }
+  return dismissed;
+}
+
 function dismissJobs(companiesToDismiss, titlesToDismiss) {
-  // console.log('dismissJobs function called with:', { companiesToDismiss, titlesToDismiss });
+  if (!window.location.href.includes('linkedin.com')) {
+    console.error('This script should only run on LinkedIn.com');
+    return;
+  }
+
   const jobCards = document.querySelectorAll('.job-card-container');
-  // console.log(`Found ${jobCards.length} job cards`);
+  let dismissed = 0;
 
   jobCards.forEach(card => {
     const companyName = card.querySelector('.job-card-container__primary-description').textContent.trim().toLowerCase();
     const jobTitle = card.querySelector('.job-card-container__link').textContent.trim().toLowerCase();
-    // console.log(`Checking job: "${jobTitle}" at ${companyName}`);
 
     const shouldDismiss = companiesToDismiss.some(company => companyName.includes(company.toLowerCase())) ||
       titlesToDismiss.some(title => jobTitle.includes(title.toLowerCase()));
-    const isJobDismissed = card.classList.contains('job-card-list--is-dismissed')
+    const isJobDismissed = card.classList.contains('job-card-list--is-dismissed');
 
-    if (shouldDismiss) {
-      if (isJobDismissed) {
-        // console.log(`Job "${jobTitle}" from ${companyName} is already dismissed`);
-        return;
-      }
-      // Locate the dismiss buttons
+    if (shouldDismiss && !isJobDismissed) {
       const dismissButton = card.querySelector('button[aria-label^="Dismiss"]');
       if (dismissButton) {
-        // console.log(`Dismissing job: "${jobTitle}" from ${companyName}`);
-        // Click the dismiss button
         dismissButton.click();
+        dismissed++;
 
-        // Post-validation: Wait for the job to be marked as dismissed
         const observer = new MutationObserver(function (mutations) {
           mutations.forEach(function (mutation) {
             if (mutation.target.classList.contains('job-card-list--is-dismissed')) {
-              // console.log(`Job "${jobTitle}" from ${companyName} successfully dismissed`);
-              observer.disconnect();  // Stop observing once dismissed
+              observer.disconnect();
             }
           });
         });
 
-        // Observe changes to the job element
         observer.observe(card, { attributes: true, attributeFilter: ['class'] });
-      } else {
-        console.error(`Dismiss button not found for job "${jobTitle}" from ${companyName}`);
       }
     }
-    // Else do nothing.
+  });
+
+  if (dismissed > 0) {
+    chrome.storage.sync.get(['dismissed'], ({ dismissed: currentDismissed = 0 }) => {
+      const newDismissed = currentDismissed + dismissed;
+      chrome.storage.sync.set({ dismissed: newDismissed }, () => {
+        chrome.runtime.sendMessage({ action: 'updateDismissedCount', count: newDismissed });
+      });
+    });
+  }
+}
+
+function updateDismissedCount() {
+  chrome.storage.sync.get(['dismissed'], ({ dismissed = 0 }) => {
+    const countElement = document.getElementById('dismissedCount');
+    if (countElement) {
+      countElement.textContent = dismissed;
+    }
   });
 }
+
+// Add this listener to receive messages from the content script
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'updateDismissedCount') {
+    updateDismissedCount();
+  }
+});
