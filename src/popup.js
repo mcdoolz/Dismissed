@@ -14,52 +14,34 @@ document.addEventListener('DOMContentLoaded', () => {
   filterInput.value = '';
   filterInput.focus();
 
-  // Save input to storage
   function saveInput() {
     if (!filterInput.value) {
       console.log("No input to save");
       return;
     }
     const items = filterInput.value.split(/[,;]/).map(item => item.trim()).filter(Boolean);
-    // console.log('Items to save:', items);
     const storageKey = filterTypeSelect.value;
     const container = storageKey === 'companies' ? companyTags : titleTags;
 
     chrome.storage.sync.get([storageKey], (result) => {
-      if (!result[storageKey]) {
-        result[storageKey] = [];
-      }
+      if (!result[storageKey]) result[storageKey] = [];
       const updatedItems = [...new Set([...result[storageKey], ...items])];
-      // console.log('Updating storage with:', updatedItems);
       chrome.storage.sync.set({ [storageKey]: updatedItems }, () => {
-        // console.log('Storage updated');
         displayTags(updatedItems, container, storageKey);
         filterInput.value = '';
       });
     });
   }
 
-  // Autosave and parse input
-  filterInput.addEventListener('input', (e) => {
-    // console.log(`Input event fired. Current value: ${filterInput.value}`);
-    if (filterInput.value.includes(',') || filterInput.value.includes(';')) {
-      saveInput();
-    }
+  filterInput.addEventListener('input', () => {
+    if (filterInput.value.includes(',') || filterInput.value.includes(';')) saveInput();
   });
 
-  filterInput.addEventListener('blur', () => {
-    // console.log('Blur event fired');
-    saveInput();
-  });
-
+  filterInput.addEventListener('blur', saveInput);
   filterInput.addEventListener('keyup', (e) => {
-    // console.log(`Keyup event fired. Key: ${e.key}, Code: ${e.code}`);
-    if (e.key === 'Enter' || e.code === 'Enter') {
-      saveInput();
-    }
+    if (e.key === 'Enter') saveInput();
   });
 
-  // Function to format the date
   function formatDate(dateString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
@@ -112,51 +94,50 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function displayTags(items, container, storageKey) {
-    // console.log(`Displaying tags for ${storageKey}:`, items);
-    container.style.display = 'block';
-    // Get the containers parent element and hide it if no items.
-    if (!items || items.length === 0) {
-      container.parentElement.style.display = 'none';
-    } else {
-      container.parentElement.style.display = 'block';
-    }
-
+    const isRegex = str => str.startsWith('/') && str.endsWith('/');
+    container.style.display = items.length ? 'block' : 'none';
     container.innerHTML = '';
+
     items.forEach(item => {
       const tag = document.createElement('span');
-      tag.className = 'tag';
+      tag.className = !isRegex(item) ? 'tag' : 'tag regex';
       tag.textContent = item;
 
       const removeButton = document.createElement('button');
-      removeButton.textContent = 'x';
+      removeButton.textContent = '\u2716';
+      removeButton.title = 'Remove';
+      removeButton.className = 'remove';
       removeButton.addEventListener('click', () => removeTag(item, storageKey, container));
 
+      const editButton = document.createElement('button');
+      editButton.textContent = '\u270E';
+      editButton.title = 'Edit';
+      editButton.className = 'edit';
+      editButton.addEventListener('click', () => {
+        filterInput.value = item;
+        removeTag(item, storageKey, container);
+      });
+
       tag.appendChild(removeButton);
+      tag.appendChild(editButton);
       container.appendChild(tag);
     });
   }
 
-  // Remove a tag and update storage
   function removeTag(item, storageKey, container) {
-    // console.log(`Removing tag: ${item} from ${storageKey}`);
     chrome.storage.sync.get([storageKey], (result) => {
       const items = result[storageKey].filter(storedItem => storedItem !== item);
       chrome.storage.sync.set({ [storageKey]: items }, () => {
-        // console.log(`Updated ${storageKey} in storage:`, items);
         displayTags(items, container, storageKey);
       });
     });
   }
 
-  // Display tags for titles and companies.
   chrome.storage.sync.get(['companies', 'titles'], ({ companies = [], titles = [] }) => {
-    // console.log('Retrieved companies:', companies);
-    // console.log('Retrieved titles:', titles);
     displayTags(companies, companyTags, 'companies');
     displayTags(titles, titleTags, 'titles');
     updateDismissedCount();
   });
-
 });
 
 /**
@@ -180,6 +161,14 @@ function dismissedCount(dismissed) {
 }
 
 function dismissJobs(companiesToDismiss, titlesToDismiss) {
+  const isRegex = str => str.startsWith('/') && str.endsWith('/');
+  function parseRegex(str) {
+    const parts = str.split('/');
+    const pattern = parts[1];
+    const flags = parts[2] || 'i';
+    return new RegExp(pattern, flags);
+  }
+
   if (!window.location.href.includes('linkedin.com')) {
     console.error('This script should only run on LinkedIn.com');
     return;
@@ -189,11 +178,21 @@ function dismissJobs(companiesToDismiss, titlesToDismiss) {
   let dismissed = 0;
 
   jobCards.forEach(card => {
-    const companyName = card.querySelector('.job-card-container__primary-description').textContent.trim().toLowerCase();
-    const jobTitle = card.querySelector('.job-card-container__link').textContent.trim().toLowerCase();
+    const companyName = card.querySelector('.job-card-container__primary-description').textContent.trim();
+    const jobTitle = card.querySelector('.job-card-container__link').textContent.trim();
 
-    const shouldDismiss = companiesToDismiss.some(company => companyName.includes(company.toLowerCase())) ||
-      titlesToDismiss.some(title => jobTitle.includes(title.toLowerCase()));
+    const shouldDismiss = companiesToDismiss.some(company => {
+      if (isRegex(company)) {
+        return parseRegex(company).test(companyName);
+      }
+      return companyName.toLowerCase().includes(company.toLowerCase());
+    }) || titlesToDismiss.some(title => {
+      if (isRegex(title)) {
+        return parseRegex(title).test(jobTitle);
+      }
+      return jobTitle.toLowerCase().includes(title.toLowerCase());
+    });
+
     const isJobDismissed = card.classList.contains('job-card-list--is-dismissed');
 
     if (shouldDismiss && !isJobDismissed) {
@@ -223,6 +222,9 @@ function dismissJobs(companiesToDismiss, titlesToDismiss) {
       });
     });
   }
+
+  console.log(`Dismissed ${dismissed} job(s)`);
+  return dismissed;
 }
 
 function updateDismissedCount() {

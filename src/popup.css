@@ -31,40 +31,67 @@ input {
   margin: 0 auto;
 }
 
-button {
-  width: 100%;
-
-  margin-bottom: 10px;
-  padding: 8px;
+#filterInputLabel {
+  display: block;
+  margin-top: 10px;
 }
 
 .tag-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 10px;
+  width: 100%;
 }
 
 .tag {
   background-color: #e0e0e0;
-  border-radius: 3px;
-  padding: 10px 30px 10px 10px;
-  margin: 2px;
-  font-size: 12px;
+  border-radius: 4px;
+  padding: 10px 60px 15px 10px;
+  margin: 0 10px 10px 0;
+  font-size: 15px;
+  line-height: 15px;
   display: inline-block;
   position: relative;
+}
+
+.regex {
+  background-color: lightblue;
 }
 
 .tag button {
   background: none;
   border: none;
-  color: red;
   cursor: pointer;
   font-weight: bold;
+  width: 20px;
+  height: 20px;
   padding: 0;
-  width: auto;
   position: absolute;
-  right: 15px;
-  font-size: 12px;
+  font-size: 10px;
+  line-height: 15px;
+  font-family: sans-serif !important;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+button.remove {
+  background-color: red;
+  right: 10px;
+}
+
+button.edit {
+  background-color: blue;
+  right: 35px;
+}
+
+button.remove:hover {
+  background-color: darkred;
+}
+
+button.edit:hover {
+  background-color: darkblue;
 }
 
 #filter {
