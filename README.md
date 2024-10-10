@@ -12,6 +12,8 @@ _Well now you can!_
 
 Introducing, Dismissed! The way to get rid of all LinkedIn listings that you don't want to see at the press of a button.
 
+[Get it here!](https://chromewebstore.google.com/detail/dismissed/hjcjcfngbfiljnmfgldooolljbopdoao)
+
 TODO:
 Remove the listings and invoke the UI to lazy load more, and remove those until we hit the end of the page of results.
 
